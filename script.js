@@ -497,52 +497,53 @@ function updateLocation(newLocation) {
   showNotification(`Lokasi diperbarui: ${newLocation}`, "success");
 }
 
-// Event listeners
-document.addEventListener("DOMContentLoaded", function () {
-  // Crop buttons
-  const cropButtons = document.querySelectorAll(".crop-btn");
-  const plantingAdvice = document.getElementById("planting-advice");
+// // Event listeners
+// document.addEventListener("DOMContentLoaded", function () {
+//   // Crop buttons
+//   const cropButtons = document.querySelectorAll(".crop-btn");
+//   const plantingAdvice = document.getElementById("planting-advice");
 
-  cropButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      const crop = this.getAttribute("data-crop");
-      plantingAdvice.innerHTML = getPlantingRecommendation(crop);
+//   cropButtons.forEach((button) => {
+//     button.addEventListener("click", function () {
+//       const crop = this.getAttribute("data-crop");
+//       plantingAdvice.innerHTML = getPlantingRecommendation(crop);
 
-      // Update active button
-      cropButtons.forEach((btn) => btn.classList.remove("active"));
-      this.classList.add("active");
-    });
-  });
+//       // Update active button
+//       cropButtons.forEach((btn) => btn.classList.remove("active"));
+//       this.classList.add("active");
+//     });
+//   });
 
-  // Refresh button
-  document
-    .getElementById("refresh-weather")
-    .addEventListener("click", function () {
-      fetchBMKGWeather();
-    });
+//   // Refresh button
+//   document
+//     .getElementById("refresh-weather")
+//     .addEventListener("click", function () {
+//       fetchBMKGWeather();
+//     });
 
-  // Change location button
-  document
-    .getElementById("change-location")
-    .addEventListener("click", function () {
-      document.getElementById("search-modal").classList.add("active");
-    });
+//   // Change location button
+//   document
+//     .getElementById("change-location")
+//     .addEventListener("click", function () {
+//       document.getElementById("search-modal").classList.add("active");
+//     });
 
-  // Close modal button
-  document.getElementById("close-modal").addEventListener("click", function () {
-    document.getElementById("search-modal").classList.remove("active");
-  });
+//   // Close modal button
+//   document.getElementById("close-modal").addEventListener("click", function () {
+//     document.getElementById("search-modal").classList.remove("active");
+//   });
 
-  // Location options
-  const locationOptions = document.querySelectorAll(".location-option");
-  locationOptions.forEach((option) => {
-    option.addEventListener("click", function () {
-      const location = this.getAttribute("data-location");
-      updateLocation(location);
-      document.getElementById("search-modal").classList.remove("active");
-    });
-  });
+//   // Location options
+//   const locationOptions = document.querySelectorAll(".location-option");
+//   locationOptions.forEach((option) => {
+//     option.addEventListener("click", function () {
+//       const location = this.getAttribute("data-location");
+//       updateLocation(location);
+//       document.getElementById("search-modal").classList.remove("active");
+//     });
+//   });
 
-  // Panggil fungsi untuk mengambil data cuaca saat halaman dimuat
-  fetchBMKGWeather();
-});
+//   // Panggil fungsi untuk mengambil data cuaca saat halaman dimuat
+//   fetchBMKGWeather();
+// });
+
