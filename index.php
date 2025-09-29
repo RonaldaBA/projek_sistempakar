@@ -539,24 +539,24 @@ $tentangkami = "#tentang-kami";
                         <i class="fas fa-calendar-check"></i>
                     </div>
                     <h3>Kalender Tanam Adaptif</h3>
-                    <p>Rekomendasi waktu tanam & panen berdasarkan musim dan jenis komoditas untuk hasil optimal.</p>
+                    <p>Rekomendasi waktu tanam & panen dan jenis komoditas untuk hasil optimal.</p>
                 </div>
                 
-                <div class="feature-card">
+                <!-- <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-clipboard-list"></i>
                     </div>
                     <h3>Laporan & Catatan Tanam</h3>
                     <p>Simpan riwayat tanam-panen dan cocokkan dengan data cuaca untuk analisis pola pertanian.</p>
-                </div>
+                </div> -->
                 
-                <div class="feature-card">
+                <!-- <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
                     <h3>Analisis Produktivitas</h3>
                     <p>Evaluasi hasil panen berdasarkan data iklim untuk perbaikan strategi pertanian.</p>
-                </div>
+                </div> -->
             </div>
         </div>
     </section>
