@@ -60,7 +60,7 @@ $tentangkami = "#tentang-kami";
         <div class="container">
             <div class="hero-content">
                 <h2>Mitigasi Gagal Panen dengan Informasi Iklim Lokal</h2>
-                <p>Platform berbasis web yang menyajikan data cuaca harian dan mingguan berbasis lokasi petani, disertai rekomendasi waktu tanam dan panen untuk adaptasi perubahan iklim.</p>
+                <p>Platform berbasis web yang menyajikan data cuaca setiap 3 jam dari hari ini hingga 2 hari ke depan berdasarkan lokasi petani. Web ini juga dilengkapi rekomendasi jadwal tanam untuk memperkirakan waktu panen.</p>
                 <div class="location-container">
                 <div class="dropdown">
                 <?php

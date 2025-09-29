@@ -42,11 +42,11 @@ $cropParams = [
     // 'kedelai' => ['plant_offset_start'=>1, 'plant_offset_end'=>14, 'growth_days'=>100],
     // 'cabe' => ['plant_offset_start'=>1, 'plant_offset_end'=>14, 'growth_days'=>110],
     // 'bawang' => ['plant_offset_start'=>1, 'plant_offset_end'=>10, 'growth_days'=>90],
-    'padi' => ['plant_offset_start' => 1, 'plant_offset_end' => 0, 'growth_days' => 120],
-    'jagung' => ['plant_offset_start' => 1, 'plant_offset_end' => 0, 'growth_days' => 90],
-    'kedelai' => ['plant_offset_start' => 1, 'plant_offset_end' => 0, 'growth_days' => 100],
-    'cabe' => ['plant_offset_start' => 1, 'plant_offset_end' => 0, 'growth_days' => 110],
-    'bawang' => ['plant_offset_start' => 1, 'plant_offset_end' => 0, 'growth_days' => 90],
+    'padi' => ['plant_offset_start' => 1, 'plant_offset_end' => 2, 'growth_days' => 120],
+    'jagung' => ['plant_offset_start' => 1, 'plant_offset_end' => 2, 'growth_days' => 90],
+    'kedelai' => ['plant_offset_start' => 1, 'plant_offset_end' => 2, 'growth_days' => 100],
+    'cabe' => ['plant_offset_start' => 1, 'plant_offset_end' => 2, 'growth_days' => 110],
+    'bawang' => ['plant_offset_start' => 1, 'plant_offset_end' => 2, 'growth_days' => 90],
 ];
 
 function buildFragWithDays(string $cropKey, \DateTime $base, array $params): string
