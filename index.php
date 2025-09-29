@@ -6,7 +6,7 @@ $dbname = "cuacatani_db";
 
 $connection = mysqli_connect($dbhost, $dbusername, $dbpassword,  $dbname);
 
-# Nav Lokasi
+# Navigasi Lokasi
 $resethalaman = "/projek_sistempakar";
 $beranda = "#beranda";
 $prediksicuaca = "#prediksi-cuaca";
@@ -47,8 +47,6 @@ $tentangkami = "#tentang-kami";
                     <li><a href="<?= htmlspecialchars($beranda) ?>">Beranda</a></li>
                     <li><a href="<?= htmlspecialchars($prediksicuaca) ?>">Prediksi Cuaca</a></li>
                     <li><a href="<?= htmlspecialchars($kalendertanam) ?>">Kalender Tanam</a></li>
-                    <!--<li><a href="#">Artikel</a></li>-->
-                    <!--<li><a href="#">Catatan Tanam</a></li>-->
                     <li><a href="<?= htmlspecialchars($tentangkami) ?>">Tentang Kami</a></li>
                 </ul>
             </nav>
@@ -248,7 +246,7 @@ $tentangkami = "#tentang-kami";
                 .dropdown-menu.grid-4-cols .dropdown-col {
                 width: 15vw;
                 box-sizing: border-box;
-                gap: 0.1vw;        /* jarak antar kolom lebih besar */
+                gap: 0.1vw;
                 }
 
                 .dropdown-menu.grid-4-cols .dropdown-col .dropdown-item {
@@ -290,12 +288,6 @@ $tentangkami = "#tentang-kami";
                     window.location.href = '<?= htmlspecialchars($resethalaman) ?>';
                 });
                 </script>
-
-                </div>
-                    <!-- <div class="location-tag">
-                        <i class="fas fa-map-marker-alt"></i> <span id="current-location">Tajemsari, Tegowanu, Grobogan, Jawa Tengah</span>
-                    </div> -->
-                </div>
             </div>
         </div>
     </section>
@@ -306,11 +298,6 @@ $tentangkami = "#tentang-kami";
             <div class="container">
                 <div class="dashboard-header">
                     <h2 class="section-title">Dashboard Informasi Iklim</h2>
-                    <!-- <form method="get">
-                        <button class="refresh-btn" id="refresh-weather" type="submit" name="hari" value="0">
-                            <i class="fas fa-sync-alt"></i> Perbarui Data
-                        </button>
-                    </form> -->
                 </div>
                 
                 <div class="api-info">
@@ -593,10 +580,8 @@ $tentangkami = "#tentang-kami";
                 <div class="footer-section">
                     <h3>Mitra</h3>
                     <ul class="footer-links">
-                        <!-- <li><i class="fas fa-building"></i> Dinas Pertanian Kota Semarang</li> -->
                         <li><i class="fas fa-cloud-sun"></i> BMKG Stasiun Semarang</li>
                         <li><i class="fas fa-graduation-cap"></i> Universitas Islam Negeri Walisongo Semarang</li>
-                        <!-- <li><i class="fas fa-seedling"></i> Balai Penyuluhan Pertanian</li> -->
                     </ul>
                 </div>
             </div>
@@ -613,33 +598,7 @@ $tentangkami = "#tentang-kami";
         <i class="fas fa-info-circle"></i>
         <span id="notification-message">Pesan notifikasi</span>
     </div>
-    
-    <!-- Search Modal -->
-    <div class="search-modal" id="search-modal">
-        <div class="modal-content">
-            <button class="close-modal" id="close-modal">
-                <i class="fas fa-times"></i>
-            </button>
-            <h2>Ubah Lokasi</h2>
-            <p>Silakan pilih lokasi baru untuk melihat informasi cuaca:</p>
-            
-            <div class="location-search">
-                <input type="text" id="location-input" placeholder="Masukkan nama desa/kecamatan">
-                <button id="search-location"><i class="fas fa-search"></i> Cari Lokasi</button>
-            </div>
-            
-            <div class="location-results" id="location-results" style="margin-top: 20px;">
-                <p>Lokasi yang tersedia:</p>
-                <ul style="list-style: none; margin-top: 10px; max-height: 200px; overflow-y: auto;">
-                    <li><button class="location-option" data-location="Tajemsari, Tegowanu, Grobogan, Jawa Tengah">Tajemsari, Tegowanu, Grobogan, Jawa Tengah</button></li>
-                    <li><button class="location-option" data-location="Tegowanu, Grobogan, Jawa Tengah">Tegowanu, Grobogan, Jawa Tengah</button></li>
-                    <li><button class="location-option" data-location="Godan, Tegowanu, Grobogan, Jawa Tengah">Godan, Tegowanu, Grobogan, Jawa Tengah</button></li>
-                    <li><button class="location-option" data-location="Tambahrejo, Grobogan, Jawa Tengah">Tambahrejo, Grobogan, Jawa Tengah</button></li>
-                    <li><button class="location-option" data-location="Grobogan, Jawa Tengah">Grobogan, Jawa Tengah</button></li>
-                </ul>
-            </div>
-        </div>
-    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
