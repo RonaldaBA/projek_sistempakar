@@ -5,7 +5,7 @@ $dbpassword = "";
 $dbname = "cuacatani_db";
 
 $connection = mysqli_connect($dbhost, $dbusername, $dbpassword,  $dbname);
-#
+
 # Navigasi Lokasi
 $resethalaman = "/projek_sistempakar";
 $beranda = "#beranda";
