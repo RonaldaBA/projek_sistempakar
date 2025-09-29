@@ -32,7 +32,6 @@ $tentangkami = "#tentang-kami";
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Header -->
     <header>
         <div class="container header-container" style="position: relative; z-index:2;">
             <div class="logo">
@@ -53,7 +52,6 @@ $tentangkami = "#tentang-kami";
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section id="beranda" class="hero">
         <div class="container">
             <div class="hero-content">
@@ -62,238 +60,118 @@ $tentangkami = "#tentang-kami";
                 <div class="location-container">
                 <div class="dropdown">
                 <?php
-                if (isset($_GET['lokasi']) && $_GET['lokasi'] !== '') {
-                    $lokasi = $_GET['lokasi'];
-                } else {
-                    $lokasi = '';
-                }
-                
-                // escape untuk dipakai pada LIKE
+                $lokasi = $_GET['lokasi'] ?? '';
                 $lokasi_esc = mysqli_real_escape_string($connection, $lokasi);
-
                 $currentLabel = '';
+                $data = null;
+                $result = null;
+
                 if ($lokasi_esc !== '') {
                     $sqlSingle = "SELECT nama FROM lokasi WHERE kode = '{$lokasi_esc}' LIMIT 1";
                     $resSingle = mysqli_query($connection, $sqlSingle);
                     if ($resSingle && mysqli_num_rows($resSingle) > 0) {
-                        $rowSingle = mysqli_fetch_assoc($resSingle);
-                        $currentLabel = $rowSingle['nama'];
+                        $currentLabel = mysqli_fetch_assoc($resSingle)['nama'];
                     }
                 }
 
-                // Tentukan query list dan label saat ini berdasarkan panjang $lokasi
                 if (strlen($lokasi) == 0) {
                     $sqlList = "SELECT kode, nama FROM lokasi WHERE CHAR_LENGTH(kode) = 2 LIMIT 100";
                     $currentSelect = "Provinsi";
                 } elseif (strlen($lokasi) == 2) {
-                    // Provinsi sudah dipilih -> tampilkan kota/kab (kode length = 5)
                     $sqlList = "SELECT kode, nama FROM lokasi WHERE CHAR_LENGTH(kode) = 5 AND kode LIKE '{$lokasi_esc}%' LIMIT 100";
-                    $currentSelect = "Kabupaten";                
+                    $currentSelect = "Kabupaten";
                 } elseif (strlen($lokasi) == 5) {
-                    // Kota/kab sudah dipilih -> tampilkan kecamatan (kode length = 8)
                     $sqlList = "SELECT kode, nama FROM lokasi WHERE CHAR_LENGTH(kode) = 8 AND kode LIKE '{$lokasi_esc}%' LIMIT 100";
                     $currentSelect = "Kecamatan";
                 } elseif (strlen($lokasi) == 8) {
-                    // Kecamatan sudah dipilih -> tampilkan desa (kode length = 13)
                     $sqlList = "SELECT kode, nama FROM lokasi WHERE CHAR_LENGTH(kode) = 13 AND kode LIKE '{$lokasi_esc}%' LIMIT 100";
                     $currentSelect = "Desa / Kelurahan";
-                } elseif (strlen($lokasi) == 13) {
-                    $sqlList = "SELECT kode, nama FROM lokasi WHERE CHAR_LENGTH(kode) = 13 AND kode LIKE '{$lokasi_esc}%' LIMIT 100";
-                    $api_url = "https://api.bmkg.go.id/publik/prakiraan-cuaca?adm4={$lokasi}";
+                } else { // strlen($lokasi) == 13
+                    $sqlList = "SELECT kode, nama FROM lokasi WHERE CHAR_LENGTH(kode) = 13 AND kode LIKE '" . substr($lokasi_esc, 0, 8) . "%' LIMIT 100";
                     $currentSelect = $currentLabel;
-
-                    $response_body = @file_get_contents($api_url);
-
-                    // Check if fail
-                    if ($response_body === false):
-                    echo "PERINGATAN: Data tidak tersedia untuk wilayah ini atau server sedang sibuk.";
-                    ?>
-                    <br>
-                    <br>
-                    <button class="btn-location" id="reset-location">
-                        <i class="fas fa-sync-alt"></i> Cari Lokasi Baru
-                    </button>
-                    
-                    <script>
-                    document.getElementById('reset-location').addEventListener('click', function() {
-                        window.location.href = '<?= htmlspecialchars($resethalaman) ?>';
-                    });
-                    </script>
-                    
-                    <?php
-                        die();
-                    endif;
-
-                    // Decode String JSON
-                    $data = json_decode($response_body, true);
-
-                    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
-                        die(
-                            "PERINGATAN: Data bukan format JSON yang valid. " .
-                                htmlspecialchars(json_last_error_msg())
-                        );
-                    }
-
-                    // Ambil semua parameter GET sekarang
-                    $get_params = $_GET;
-                    $hari_lama = isset($get_params['hari']) ? $get_params['hari'] : null;
-                    $lokasi_lama = isset($get_params['lokasi']) ? $get_params['lokasi'] : null;
-
-                    // Tentukan index hari dari parameter GET (0,1,2). Default: 0
-                    $index_hari = isset($_GET['hari']) && in_array($_GET['hari'], ['0','1','2'], true)
-                        ? (int)$_GET['hari']
-                        : 0;
-
-                    // Akses data harian sesuai index
-                    $prakiraan_harian = $data["data"][0]["cuaca"][$index_hari] ?? null;
-
-                    // Set header
-                    if (isset($_GET['hari'])) { // Check User's Last Position Before Direct
-                        $hari = intval($_GET['hari']);
-                    ?>
-
-                    <script>
-                        document.addEventListener("DOMContentLoaded", function() {
-                        // Jika ada parameter ?hari tapi belum ada fragment
-                        const params = new URLSearchParams(window.location.search);
-                        if (params.has("hari")) {
-                            const hari = params.get("hari");
-                            window.location.hash = "<?= htmlspecialchars($prediksicuaca) ?>";
-                        }
-                        });
-                    </script>
-
-                    <?php
-                    } else {
-                        header("Content-Type: text/html; charset=utf-8");
-                    }
-
-                } else {
-                    // Default: tampilkan provinsi (kode length = 2)
                     $api_url = "https://api.bmkg.go.id/publik/prakiraan-cuaca?adm4={$lokasi}";
                     $response_body = @file_get_contents($api_url);
 
-                    // Check if fail
-                    if ($response_body === false):
-                    echo "PERINGATAN: Data tidak tersedia untuk wilayah ini atau server sedang sibuk.";
-                    ?>
-                    <br>
-                    <br>
-                    <button class="btn-location" id="reset-location">
-                        <i class="fas fa-sync-alt"></i> Cari Lokasi Baru
-                    </button>
-                    
-                    <script>
-                    document.getElementById('reset-location').addEventListener('click', function() {
-                        window.location.href = '<?= htmlspecialchars($resethalaman) ?>';
-                    });
-                    </script>
-                    
-                    <?php
-                        die();
-                    endif;
-
-                    // Decode String JSON
-                    $data = json_decode($response_body, true);
-
-                    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
-                        die(
-                            "PERINGATAN: Data bukan format JSON yang valid. " .
-                                htmlspecialchars(json_last_error_msg())
-                        );
+                    if ($response_body !== false) {
+                        $data = json_decode($response_body, true);
+                        if ($data === null) {
+                            echo "<div class='alert alert-danger'>PERINGATAN: Gagal memproses data JSON dari BMKG.</div>";
+                        }
+                    } else {
+                        echo "<div class='alert alert-warning'>PERINGATAN: Data tidak tersedia atau server sibuk.</div>";
                     }
                 }
 
-                // Jalankan query
-                $result = mysqli_query($connection, $sqlList);
-                if (!$result) {
-                    die("Query gagal: " . mysqli_error($connection));
+                if (isset($sqlList)) {
+                    $result = mysqli_query($connection, $sqlList);
+                    if (!$result) {
+                        die("Query lokasi gagal: " . mysqli_error($connection));
+                    }
+                }
+
+                if ($data) {
+                    $get_params = $_GET;
+                    $hari_lama = $get_params['hari'] ?? '0';
+                    $index_hari = in_array($hari_lama, ['0','1','2']) ? (int)$hari_lama : 0;
+                    $prakiraan_harian = $data["data"][0]["cuaca"][$index_hari] ?? null;
                 }
                 ?>
 
-                <!-- Tombol utama (label sekarang sesuai level) -->
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
                     data-bs-toggle="dropdown" aria-expanded="false"
                     style="color: green; background-color: white; font-weight: bold;">
-                    <?= ($currentSelect == $currentLabel) ? htmlspecialchars($currentSelect) : "Pilih " . htmlspecialchars($currentSelect) ?>
+                    <?= ($currentSelect == $currentLabel && !empty($currentLabel)) ? htmlspecialchars($currentSelect) : "Pilih " . htmlspecialchars($currentSelect) ?>
                 </button>
 
-                <!-- Form: semua item mengirimkan parameter tunggal 'lokasi' -->
                 <form method="get" style="display: flex; margin-bottom: 16px; justify-content: center; gap:20px;">
- 
+
                 <style>
-                .dropdown-menu .dropdown-item.active {
-                background-color: #49a04fff;
-                color: #fff;
-                }
-                .dropdown-menu .dropdown-item:active:not(.active) {
-                background-color: #49a04fff;
-                color: #fff;
-                }
-
-                .dropdown-menu.grid-4-cols {
-                padding: 1vw;
-                width: 50vw;
-                position: absolute;
-                z-index: 1;
-                }
-
-                .dropdown-menu.grid-4-cols .dropdown-row {
-                display: flex;
-                flex-wrap: wrap;
-                }
-
-                .dropdown-menu.grid-4-cols .dropdown-col {
-                width: 15vw;
-                box-sizing: border-box;
-                gap: 0.1vw;
-                }
-
-                .dropdown-menu.grid-4-cols .dropdown-col .dropdown-item {
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                text-align: left;
-                }
+                .dropdown-menu .dropdown-item.active { background-color: #49a04fff; color: #fff; }
+                .dropdown-menu .dropdown-item:active:not(.active) { background-color: #49a04fff; color: #fff; }
+                .dropdown-menu.grid-4-cols { padding: 1vw; width: 50vw; position: absolute; z-index: 1; }
+                .dropdown-menu.grid-4-cols .dropdown-row { display: flex; flex-wrap: wrap; }
+                .dropdown-menu.grid-4-cols .dropdown-col { width: 15vw; box-sizing: border-box; gap: 0.1vw; }
+                .dropdown-menu.grid-4-cols .dropdown-col .dropdown-item { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: left; }
                 </style>
 
+                <?php if ($result && mysqli_num_rows($result) > 0): ?>
                 <ul class="dropdown-menu grid-4-cols" aria-labelledby="dropdownMenuButton">
-                <div class="dropdown-row">
-                    <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                    <div class="dropdown-col">
-                        <button
-                        class="dropdown-item"
-                        type="submit"
-                        name="lokasi"
-                        value="<?= htmlspecialchars($row['kode']); ?>"
-                        data-kode="<?= htmlspecialchars($row['kode']); ?>"
-                        data-nama="<?= htmlspecialchars($row['nama']); ?>">
-                        <?= htmlspecialchars($row['nama']); ?>
-                        </button>
+                    <li>
+                        <div class="px-2 py-1">
+                             <input type="text" class="form-control" id="searchInput" placeholder="Cari lokasi..." onclick="event.stopPropagation();">
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <div class="dropdown-row">
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                        <div class="dropdown-col">
+                            <button class="dropdown-item" type="submit" name="lokasi" value="<?= htmlspecialchars($row['kode']); ?>">
+                                <?= htmlspecialchars($row['nama']); ?>
+                            </button>
+                        </div>
+                        <?php endwhile; ?>
                     </div>
-                    <?php endwhile; ?>
-                </div>
                 </ul>
-
+                <?php endif; ?>
                 </form>
                 
-                <?php if (strlen($lokasi) == 13): ?>
+                <?php if (!empty($lokasi)): ?>
                     <button class="btn-location" id="reset-location">
-                        <i class="fas fa-sync-alt"></i> Cari Lokasi Baru
+                        <i class="fas fa-sync-alt"></i> <?= (strlen($lokasi) == 13) ? 'Cari Lokasi Baru' : 'Reset Pilihan' ?>
                     </button>
+                    <script>
+                        document.getElementById('reset-location').addEventListener('click', function() {
+                            window.location.href = '<?= htmlspecialchars($resethalaman) ?>';
+                        });
+                    </script>
                 <?php endif; ?>
 
-                <script>
-                document.getElementById('reset-location').addEventListener('click', function() {
-                    window.location.href = '<?= htmlspecialchars($resethalaman) ?>';
-                });
-                </script>
+            </div>
             </div>
         </div>
     </section>
     
-    <?php if (strlen($lokasi) == 13): ?>
-        <!-- Dashboard Section -->
+    <?php if (isset($data) && $data): ?>
         <section class="dashboard">
             <div class="container">
                 <div class="dashboard-header">
@@ -304,36 +182,21 @@ $tentangkami = "#tentang-kami";
                     <i class="fas fa-info-circle"></i> 
                     <strong>Detail Informasi Wilayah<br></strong>
                     Sistem ini menyajikan prakiraan cuaca secara langsung untuk dua hari ke depan. Data cuaca diambil langsung dari layanan resmi BMKG dan disajikan berdasarkan wilayah yang ditentukan.<br><br>
-                            <?php
-                            if (isset($data["lokasi"]["desa"]) && isset($data["lokasi"]["kecamatan"])) {
-                                echo "<hr>";
-                                echo "<h2>Desa/Kelurahan: " .
-                                    htmlspecialchars($data["lokasi"]["desa"]) .
-                                    "</h2>";
-                                echo "<p>";
-                                echo "Kecamatan: " .
-                                    htmlspecialchars($data["lokasi"]["kecamatan"] ?? "N/A") .
-                                    "<br>";
-                                echo "Kota/Kabupaten: " .
-                                    htmlspecialchars($data["lokasi"]["kotkab"] ?? "N/A") .
-                                    "<br>";
-                                echo "Provinsi: " .
-                                    htmlspecialchars($data["lokasi"]["provinsi"] ?? "N/A") .
-                                    "<br>";
-                                echo "Koordinat: Latitude: " .
-                                    htmlspecialchars($data["lokasi"]["lat"] ?? "N/A") .
-                                    " | Longitude: " .
-                                    htmlspecialchars($data["lokasi"]["lon"] ?? "N/A") .
-                                    "<br>";
-                                echo "Zona Waktu: " .
-                                    htmlspecialchars($data["lokasi"]["timezone"] ?? "N/A") .
-                                    "<br><br><hr>";
-                                echo "</p>";
-                            } else {
-                                echo "<h2>Lokasi Tidak Ditemukan</h2>";
-                            } ?>
+                    <?php
+                    if (isset($data["lokasi"]["desa"]) && isset($data["lokasi"]["kecamatan"])) {
+                        echo "<hr>";
+                        echo "<h2>Desa/Kelurahan: " . htmlspecialchars($data["lokasi"]["desa"]) . "</h2>";
+                        echo "<p>";
+                        echo "Kecamatan: " . htmlspecialchars($data["lokasi"]["kecamatan"] ?? "N/A") . "<br>";
+                        echo "Kota/Kabupaten: " . htmlspecialchars($data["lokasi"]["kotkab"] ?? "N/A") . "<br>";
+                        echo "Provinsi: " . htmlspecialchars($data["lokasi"]["provinsi"] ?? "N/A") . "<br>";
+                        echo "Koordinat: Latitude: " . htmlspecialchars($data["lokasi"]["lat"] ?? "N/A") . " | Longitude: " . htmlspecialchars($data["lokasi"]["lon"] ?? "N/A") . "<br>";
+                        echo "Zona Waktu: " . htmlspecialchars($data["lokasi"]["timezone"] ?? "N/A") . "<br><br><hr>";
+                        echo "</p>";
+                    } else {
+                        echo "<h2>Lokasi Tidak Ditemukan</h2>";
+                    } ?>
                 </div>
-                    <!-- Prediksi Cuaca dipindah ke bawah -->
                     <div id="prediksi-cuaca" class="dashboard-grid">
                         <div class="card">
                             <div class="card-header">
@@ -347,12 +210,12 @@ $tentangkami = "#tentang-kami";
                                     <?php foreach ($prakiraan_harian as $prakiraan): ?>
                                         <?php
                                             $waktu_lokal = !empty($prakiraan["local_datetime"]) ? htmlspecialchars((new DateTime($prakiraan["local_datetime"]))->format('d-m-Y H:i:s')) : "N/A";
-                                            $deskripsi     = htmlspecialchars($prakiraan["weather_desc"] ?? "N/A");
-                                            $alt_text      = htmlspecialchars($prakiraan["weather_desc"] ?? "Ikon Cuaca", ENT_QUOTES, "UTF-8");
-                                            $suhu          = htmlspecialchars($prakiraan["t"] ?? "N/A");
-                                            $kelembapan    = htmlspecialchars($prakiraan["hu"] ?? "N/A");
-                                            $kec_angin     = htmlspecialchars($prakiraan["ws"] ?? "N/A");
-                                            $arah_angin    = htmlspecialchars($prakiraan["wd"] ?? "N/A");
+                                            $deskripsi   = htmlspecialchars($prakiraan["weather_desc"] ?? "N/A");
+                                            $alt_text    = htmlspecialchars($prakiraan["weather_desc"] ?? "Ikon Cuaca", ENT_QUOTES, "UTF-8");
+                                            $suhu        = htmlspecialchars($prakiraan["t"] ?? "N/A");
+                                            $kelembapan  = htmlspecialchars($prakiraan["hu"] ?? "N/A");
+                                            $kec_angin   = htmlspecialchars($prakiraan["ws"] ?? "N/A");
+                                            $arah_angin  = htmlspecialchars($prakiraan["wd"] ?? "N/A");
                                             $jarak_pandang = htmlspecialchars($prakiraan["vs_text"] ?? "N/A");
                                             $raw_img_url   = $prakiraan["image"] ?? "";
                                             $img_url_processed = !empty($raw_img_url) ? str_replace(" ", "%20", $raw_img_url) : "";
@@ -368,7 +231,7 @@ $tentangkami = "#tentang-kami";
                                                 <div><strong>Kelembapan:</strong> <?= $kelembapan ?>%</div>
                                                 <div><strong>Kec. Angin:</strong> <?= $kec_angin ?> km/j</div>
                                                 <div><strong>Arah Angin:</strong> dari <?= $arah_angin ?></div>
-                                                <div><strong>Jarak Pandang:</strong> dari <?= $jarak_pandang ?></div>
+                                                <div><strong>Jarak Pandang:</strong> <?= $jarak_pandang ?></div>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
@@ -378,10 +241,9 @@ $tentangkami = "#tentang-kami";
                                 </div>
                                 
                                 <form id="form-hari" method="get" style="display: flex; margin-bottom: 16px; justify-content: center; gap:20px;">
-                                <!-- Input hidden agar parameter lama ikut termuat -->
                                 <?php foreach ($get_params as $key => $value): ?>
                                     <?php
-                                    if ($key === 'hari') continue; // skip hari lama agar tidak duplikat
+                                    if ($key === 'hari') continue;
                                     $key_s = htmlspecialchars($key, ENT_QUOTES, 'UTF-8');
                                     $value_s = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
                                     ?>
@@ -399,115 +261,101 @@ $tentangkami = "#tentang-kami";
                         </div>
                     </div>
                 <br>
-                <!-- Grid untuk Cuaca Saat Ini & Kalender Tanam -->
                 <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <!-- Current Weather Card -->
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="fas fa-sun"></i>
-                                <h3>Cuaca Saat Ini</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="weather-display">
-                                    <div>
-                                        <div class="current-temp" id="current-temp">--°C</div>
-                                        <div id="weather-desc">--</div>
-                                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-sun"></i>
+                            <h3>Cuaca Saat Ini</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="weather-display">
+                                <div>
+                                    <div class="current-temp" id="current-temp">--°C</div>
+                                    <div id="weather-desc">--</div>
+                                </div>
+                                <div id="weather-icon-container">
                                     <i class="fas fa-cloud-sun weather-icon" id="weather-icon"></i>
                                 </div>
-                                
-                                <div class="weather-details">
-                                    <div class="detail-item">
-                                        <i class="fas fa-wind"></i>
-                                        <div>Kecepatan Angin: <span id="wind-speed">--</span> km/jam</div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-tint"></i>
-                                        <div>Kelembaban: <span id="humidity">--</span>%</div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-compress-alt"></i>
-                                        <div>Tekanan: <span id="pressure">--</span> hPa</div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-eye"></i>
-                                        <div>Jarak Pandang: <span id="visibility">--</span> km</div>
-                                    </div>
+                            </div>
+                            
+                            <div class="weather-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-wind"></i>
+                                    <div>Kecepatan Angin: <span id="wind-speed">--</span> km/jam</div>
                                 </div>
-                                
-                                <div class="temp-chart">
-                                    <canvas id="temp-chart"></canvas>
+                                <div class="detail-item">
+                                    <i class="fas fa-tint"></i>
+                                    <div>Kelembaban: <span id="humidity">--</span>%</div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-compass"></i>
+                                    <div>Arah Angin: <span id="wind-direction">--</span></div>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-eye"></i>
+                                    <div>Jarak Pandang: <span id="visibility">--</span> km</div>
                                 </div>
                             </div>
+                            
+                            <div class="temp-chart">
+                                <canvas id="temp-chart"></canvas>
+                            </div>
+                            
+                            <script>
+                                const ctx = document.getElementById('temp-chart').getContext('2d');
+                                new Chart(ctx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: ['08:00', '10:00', '12:00', '14:00', '16:00'],
+                                        datasets: [{
+                                            label: 'Suhu (°C)',
+                                            data: [26, 27, 28, 29, 28],
+                                            borderColor: 'rgba(75, 192, 192, 1)',
+                                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                            fill: true,
+                                            tension: 0.4
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: { legend: { display: false } },
+                                        scales: { y: { beginAtZero: false } }
+                                    }
+                                });
+                            </script>
+
                         </div>
-                        <!-- Chart.js untuk grafik suhu -->
-                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                        <script>
-                            const ctx = document.getElementById('temp-chart').getContext('2d');
-                            new Chart(ctx, {
-                                type: 'line',
-                                data: {
-                                    labels: ['08:00', '10:00', '12:00', '14:00', '16:00'],
-                                    datasets: [{
-                                        label: 'Suhu (°C)',
-                                        data: [26, 27, 28, 29, 28],
-                                        borderColor: 'rgba(75, 192, 192, 1)',
-                                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                        fill: true,
-                                        tension: 0.4
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: { legend: { display: false } },
-                                    scales: { y: { beginAtZero: false } }
-                                }
-                            });
-                        </script>
+                    </div>
 
-                        <?php include "sistem_kalendertanam.php"; ?>
+                    <?php @include "sistem_kalendertanam.php"; ?>
 
-                        <div id="kalender-tanam" class="card">
-                            <div class="card-header">
-                                <i class="fas fa-calendar"></i>
-                                <h3>Kalender Tanam</h3>
+                    <div id="kalender-tanam" class="card">
+                        <div class="card-header">
+                            <i class="fas fa-calendar"></i>
+                            <h3>Kalender Tanam</h3>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Rekomendasi Tanam dan Prakiraan Panen:</strong></p>
+                            <div class="planting-recommendation">
+                                <div id="recommendation">Pilih komoditas untuk rekomendasi.</div>
                             </div>
-                            <div class="card-body">
-                                <p><strong>Rekomendasi Tanam dan Prakiraan Panen:</strong></p>
-                                <div class="planting-recommendation">
-                                    <p id="planting-advice">
-                                    <div id="recommendation"></div>
-                                    </p>
-                                </div>
-
-                                <div class="crop-buttons">
-                                <?php
-                                $crops = [
-                                    'padi'    => 'Padi',
-                                    'jagung'  => 'Jagung',
-                                    'kedelai' => 'Kedelai',
-                                    'cabe'    => 'Cabe',
-                                    'bawang'  => 'Bawang',
-                                ];
-                                ?>
-                                <?php foreach ($crops as $key => $label): ?>
-                                <button class="crop-btn" data-crop="<?= htmlspecialchars($key) ?>">
-                                    <?= htmlspecialchars($label) ?>
-                                </button>
-                                <?php endforeach; ?>
-                                </div>
+                            <div class="crop-buttons">
+                                <button class="crop-btn" data-crop="padi">Padi</button>
+                                <button class="crop-btn" data-crop="jagung">Jagung</button>
+                                <button class="crop-btn" data-crop="kedelai">Kedelai</button>
+                                <button class="crop-btn" data-crop="cabe">Cabe</button>
+                                <button class="crop-btn" data-crop="bawang">Bawang</button>
                             </div>
                         </div>
                     </div>
-                    
-                    <?php include "sistem_rekomendasitanam.php"; ?>
                 </div>
+                
+                <?php @include "sistem_rekomendasitanam.php"; ?>
             </div>
         </section>
     <?php endif; ?>
 
-    <!-- Features Section -->
     <section class="features">
         <div class="container">
             <h2 class="section-title">Fitur Utama CuacaTani</h2>
@@ -528,27 +376,10 @@ $tentangkami = "#tentang-kami";
                     <h3>Kalender Tanam Adaptif</h3>
                     <p>Rekomendasi waktu tanam & panen dan jenis komoditas untuk hasil optimal.</p>
                 </div>
-                
-                <!-- <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-clipboard-list"></i>
-                    </div>
-                    <h3>Laporan & Catatan Tanam</h3>
-                    <p>Simpan riwayat tanam-panen dan cocokkan dengan data cuaca untuk analisis pola pertanian.</p>
-                </div> -->
-                
-                <!-- <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>Analisis Produktivitas</h3>
-                    <p>Evaluasi hasil panen berdasarkan data iklim untuk perbaikan strategi pertanian.</p>
-                </div> -->
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer id="tentang-kami">
         <div class="container">
             <div class="footer-grid">
@@ -593,12 +424,105 @@ $tentangkami = "#tentang-kami";
         </div>
     </footer>
     
-    <!-- Notification -->
     <div class="notification" id="notification">
         <i class="fas fa-info-circle"></i>
         <span id="notification-message">Pesan notifikasi</span>
     </div>
 
-    <script src="script.js"></script>
-</body>
+    <?php if (isset($data) && $data): ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const prakiraanHariIni = <?= json_encode($data["data"][0]["cuaca"][0] ?? null); ?>;
+        const timezone = '<?= $data["lokasi"]["timezone"] ?? 'Asia/Jakarta'; ?>';
+        let cuacaSaatIni = null;
+
+        if (prakiraanHariIni) {
+            const now = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+            
+            for (const prakiraan of prakiraanHariIni) {
+                const prakiraanTime = new Date(prakiraan.local_datetime);
+                if (prakiraanTime >= now) {
+                    cuacaSaatIni = prakiraan;
+                    break;
+                }
+                cuacaSaatIni = prakiraan;
+            }
+
+            if (cuacaSaatIni) {
+                document.getElementById('current-temp').textContent = `${cuacaSaatIni.t}°C`;
+                document.getElementById('weather-desc').textContent = cuacaSaatIni.weather_desc;
+                document.getElementById('wind-speed').textContent = cuacaSaatIni.ws;
+                document.getElementById('humidity').textContent = cuacaSaatIni.hu;
+                document.getElementById('visibility').textContent = cuacaSaatIni.vs;
+                
+                document.getElementById('wind-direction').textContent = `dari ${cuacaSaatIni.wd}`;
+                
+                const iconContainer = document.getElementById('weather-icon-container');
+                iconContainer.innerHTML = `<img src="${cuacaSaatIni.image.replace(/ /g, '%20')}" style="width:64px; height:64px;" alt="${cuacaSaatIni.weather_desc}" title="${cuacaSaatIni.weather_desc}">`;
+            }
+
+            const chartLabels = prakiraanHariIni.map(p => new Date(p.local_datetime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
+            const chartData = prakiraanHariIni.map(p => p.t);
+
+            const ctxDynamic = document.getElementById('temp-chart').getContext('2d');
+            if (window.myTempChart) {
+                window.myTempChart.destroy();
+            }
+            window.myTempChart = new Chart(ctxDynamic, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Suhu (°C)',
+                        data: chartData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    });
+    </script>
+    <?php endif; ?>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cari elemen input pencarian
+        const searchInput = document.getElementById('searchInput');
+
+        // Pastikan elemen input ada sebelum menambahkan event listener
+        if (searchInput) {
+            // Dapatkan semua item yang akan difilter
+            const itemsToFilter = document.querySelectorAll('.dropdown-menu .dropdown-col');
+
+            // Tambahkan event listener 'keyup' yang akan aktif setiap kali pengguna mengetik
+            searchInput.addEventListener('keyup', function() {
+                const filter = searchInput.value.toLowerCase();
+
+                // Loop melalui setiap item
+                itemsToFilter.forEach(function(item) {
+                    const button = item.querySelector('.dropdown-item');
+                    if (button) {
+                        const text = button.textContent.toLowerCase();
+                        
+                        // Periksa apakah teks item mengandung teks filter
+                        if (text.includes(filter)) {
+                            item.style.display = ''; // Tampilkan item jika cocok
+                        } else {
+                            item.style.display = 'none'; // Sembunyikan item jika tidak cocok
+                        }
+                    }
+                });
+            });
+        }
+    });
+    </script>
+    </body>
 </html>
