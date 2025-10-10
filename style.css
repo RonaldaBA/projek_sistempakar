@@ -34,7 +34,7 @@ body {
 header {
   background: linear-gradient(135deg, var(--primary), var(--dark));
   color: white;
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -46,14 +46,15 @@ header {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  
+  padding-top: 0px;
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-left: 50px;
+  margin-left: 30px;
+  margin-bottom: -10px;
 }
 
 .logo i {
@@ -76,7 +77,8 @@ nav ul {
   gap: 15px;
   flex-wrap: wrap;
   justify-content: flex-end;
-  margin-right: 60px;
+  margin-right: 30px;
+  margin-bottom: 0px;
 }
 
 nav a {
